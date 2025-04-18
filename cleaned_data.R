@@ -122,5 +122,5 @@ clean_data <- data %>%
   ) %>%
   arrange(Transaction_ID)
 
-# View cleaned data
+# View cleaned data 
 View(clean_data)
