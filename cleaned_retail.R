@@ -138,5 +138,3 @@ data_clean <- data %>%
 
 # View cleaned data
 View(data_clean)
-
-
