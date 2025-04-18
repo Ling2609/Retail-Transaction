@@ -1,6 +1,6 @@
 
 data = read.csv("C:\\Users\\Anwen\\Desktop\\data analysis assignment\\retail_data.csv")
-
+View(data)
 
 library(dplyr)
 library(stringr)
@@ -89,3 +89,25 @@ Customer_ID_clean <- Customer_ID_clean %>%
 #Ratings #no issue
 
 #products #no issue
+
+filter(!is.na(Customer_ID),
+       Customer_ID != "",
+       
+       Product_Category != "")
+      
+data = read.csv("C:\\Users\\Anwen\\Desktop\\data analysis assignment\\retail_data.csv")
+View(data)
+
+library(dplyr)
+
+data_clean <- data %>%
+  # Filter rows where required fields are not missing or blank
+  filter(
+    !is.na(Customer_ID) & Customer_ID != "",
+    !is.na(Product_Category) & Product_Category != "",
+    !is.na(Product_Brand) & Product_Brand != "",
+    Feedback != "",
+    Shipping_Method != "",
+    Payment_Method != "",
+    Order_Status != ""
+  ) %>%
