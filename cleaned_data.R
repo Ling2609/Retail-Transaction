@@ -21,6 +21,7 @@ data_clean <- data %>%
     Country = str_squish(Country),# Remove extra spaces
     Country = str_to_title(Country), # Capitalize properly
     
+    
     # Convert Age to numeric (in case it's stored as character)
     Age = as.numeric(Age),
     
@@ -84,3 +85,4 @@ data_clean <- na.omit(data)
 
 # View cleaned data 
 View(data_clean)
+
