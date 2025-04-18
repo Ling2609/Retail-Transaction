@@ -63,7 +63,14 @@ clean_data <- data %>%
       Amount_clean * Total_Purchases_clean
     ),
     Total_Amount_clean = if_else(between(Total_Amount_clean, 1, 1000000), 
-                                 Total_Amount_clean, NA_real_)
+                                 Total_Amount_clean, NA_real_),
+    
+    Product_Category_clean = str_to_title(str_trim(Product_Category)),
+    Product_Brand_clean = str_trim(Product_Brand),
+    Feedback_clean = str_to_title(str_trim(Feedback)),
+    Shipping_Method_clean = str_to_title(str_trim(Shipping_Method)),
+    Payment_Method_clean = str_trim(Payment_Method),
+    Order_Status_clean = str_trim(Order_Status)
     
   ) %>%
   filter(
@@ -117,7 +124,15 @@ clean_data <- data %>%
     !is.na(Time_clean),
     !is.na(Total_Purchases_clean),
     !is.na(Amount_clean),
-    !is.na(Total_Amount_clean)
+    !is.na(Total_Amount_clean),
+    
+    !is.na(Customer_ID) & Customer_ID != "",
+    !is.na(Product_Category) & Product_Category != "",
+    !is.na(Product_Brand) & Product_Brand != "",
+    Feedback != "",
+    Shipping_Method != "",
+    Payment_Method != "",
+    Order_Status != ""
     
   ) %>%
   arrange(Transaction_ID)
