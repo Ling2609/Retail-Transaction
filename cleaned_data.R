@@ -5,12 +5,14 @@ setwd("C:\\Users\\shook\\Desktop\\Y2S1\\data analysis r code")
 library(dplyr)
 library(stringr)
 
+data[data==""]<-NA
+
 # Load data
 data <- read.csv("retail_data.csv")
 View(data)
 
 # Clean Transaction_ID and Phone in one pipeline
-clean_data <- data %>%
+data_clean <- data %>%
   mutate(
     # Clean Phone: Remove non-numeric characters
     Phone= gsub("[^0-9]", "", Phone),
@@ -67,60 +69,18 @@ clean_data <- data %>%
     
   ) %>%
   filter(
-    # Filter Transaction_ID
-    !is.na(Transaction_ID),
-    Transaction_ID != "",
     !Transaction_ID %in% Transaction_ID[duplicated(Transaction_ID) | duplicated(Transaction_ID, fromLast = TRUE)],
-    !grepl("[a-zA-Z]", Transaction_ID),
-    
-    # Filter Phone
-    !is.na(Phone),
-    Phone != "",
+    grepl("^[0-9]+$", Transaction_ID),
+
     grepl("^[0-9]+$", Phone),
-    nchar(Phone) >= 10,
-    nchar(Phone) <= 12,
-    
-    # Filter City: Remove NA or empty string
-    !is.na(City),
-    City != "",
-    
-    # Filter State: Remove NA or empty string
-    !is.na(State),
-    State != "",
-    
-    # Filter Zipcode: Remove non-numeric values and check length
-    !is.na(Zipcode),
-    Zipcode != "",
-    
-    # Filter Country: Remove non-numeric values and check length
-    !is.na(Country),
-    Country != "",
-    
-    # Filter out NA, negative, zero, or implausibly high ages
-    !is.na(Age), 
-    Age > 0, 
-    Age <= 100,
-    Age != "",
-    
-    # Clean Gender column
-    !is.na(Gender),
-    Gender != "",
-    
-    # Clean Address
-    !is.na(Address),
-    Address != "",
-    
-    # Clean Income
-    !is.na(Income),
-    Income != "",
-    
-    !is.na(Time_clean),
-    !is.na(Total_Purchases_clean),
-    !is.na(Amount_clean),
-    !is.na(Total_Amount_clean)
-    
+    grepl("^\\d{10,12}$", Phone),
+
+    # Age range validation
+    between(Age, 1, 100)
   ) %>%
   arrange(Transaction_ID)
 
+data_clean <- na.omit(data)
+
 # View cleaned data 
-View(clean_data)
+View(data_clean)
