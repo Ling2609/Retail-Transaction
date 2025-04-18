@@ -13,31 +13,29 @@ View(data)
 clean_data <- data %>%
   mutate(
     # Clean Phone: Remove non-numeric characters
-    Phone_clean = gsub("[^0-9]", "", Phone),
+    Phone= gsub("[^0-9]", "", Phone),
     
+    # Clean Country
     Country = str_squish(Country),# Remove extra spaces
     Country = str_to_title(Country), # Capitalize properly
     
     # Convert Age to numeric (in case it's stored as character)
-    Age = as.numeric(Age),
-    
-    # Remove non-numeric characters like $, commas
-    Income = as.numeric(gsub("[^0-9.-]", "", Income)
+    Age = as.numeric(Age)
     
   ) %>%
   filter(
     # Filter Transaction_ID
     !is.na(Transaction_ID),
     Transaction_ID != "",
-    !duplicated(Transaction_ID),
+    !Transaction_ID %in% Transaction_ID[duplicated(Transaction_ID) | duplicated(Transaction_ID, fromLast = TRUE)],
     !grepl("[a-zA-Z]", Transaction_ID),
     
     # Filter Phone
-    !is.na(Phone_clean),
-    Phone_clean != "",
-    grepl("^[0-9]+$", Phone_clean),
-    nchar(Phone_clean) >= 10,
-    nchar(Phone_clean) <= 12,
+    !is.na(Phone),
+    Phone != "",
+    grepl("^[0-9]+$", Phone),
+    nchar(Phone) >= 10,
+    nchar(Phone) <= 12,
     
     # Filter City: Remove NA or empty string
     !is.na(City),
@@ -65,21 +63,24 @@ clean_data <- data %>%
     !is.na(Gender),
     Gender != "",
     
-    # Clean Income column
+    # Clean Address
+    !is.na(Address),
+    Address != "",
+    
+    # Clean Income
     !is.na(Income),
-    Income != "",
-    Income > 0
+    Income != ""
     
   ) %>%
-  arrange(Transaction_ID))
+  arrange(Transaction_ID)
 
 # View cleaned data
 View(clean_data)
 
 # Optional checks
 cat("Duplicated Transaction_IDs: ", any(duplicated(clean_data$Transaction_ID)), "\n")
-cat("NA in Phone_clean: ", sum(is.na(clean_data$Phone_clean)), "\n")
-cat("Empty Phone_clean: ", sum(clean_data$Phone_clean == ""), "\n")
+cat("NA in Phone_clean: ", sum(is.na(clean_data$Phone)), "\n")
+cat("Empty Phone_clean: ", sum(clean_data$Phone == ""), "\n")
 cat("NA in City: ", sum(is.na(clean_data$City)), "\n")
 cat("Empty City: ", sum(clean_data$City == ""), "\n")
 cat("NA in State: ", sum(is.na(clean_data$State)), "\n")
@@ -108,4 +109,78 @@ cat("Empty Income: ", sum(data$Income == ""), "\n")
 cat("Number of NA values in Income:", sum(is.na(clean_data$Income)), "\n")
 cat("Empty Income: ", sum(clean_data$Income == ""), "\n")
 
-# git pull origin main
+redundant_rows <- data[data$Transaction_ID %in% data$Transaction_ID[duplicated(data$Transaction_ID) | duplicated(data$Transaction_ID, fromLast = TRUE)], ]
+cat("Number of redundant rows (including first occurrence):", nrow(redundant_rows), "\n")
+
+# Start with full dataset
+starting_data <- data
+removed_by_column <- list()
+
+# 1. Transaction_ID
+after_txn <- starting_data %>%
+  filter(
+    !is.na(Transaction_ID),
+    Transaction_ID != "",
+    !Transaction_ID %in% Transaction_ID[duplicated(Transaction_ID) | duplicated(Transaction_ID, fromLast = TRUE)],
+    !grepl("[a-zA-Z]", Transaction_ID)
+  )
+removed_by_column$Transaction_ID <- nrow(starting_data) - nrow(after_txn)
+
+# 2. Phone
+after_phone <- after_txn %>%
+  mutate(Phone_clean = gsub("[^0-9]", "", Phone)) %>%
+  filter(
+    !is.na(Phone_clean),
+    Phone_clean != "",
+    grepl("^[0-9]+$", Phone_clean),
+    nchar(Phone_clean) >= 10,
+    nchar(Phone_clean) <= 12
+  )
+removed_by_column$Phone <- nrow(after_txn) - nrow(after_phone)
+
+# 3. City
+after_city <- after_phone %>%
+  filter(!is.na(City), City != "")
+removed_by_column$City <- nrow(after_phone) - nrow(after_city)
+
+# 4. State
+after_state <- after_city %>%
+  filter(!is.na(State), State != "")
+removed_by_column$State <- nrow(after_city) - nrow(after_state)
+
+# 5. Zipcode
+after_zip <- after_state %>%
+  filter(!is.na(Zipcode), Zipcode != "")
+removed_by_column$Zipcode <- nrow(after_state) - nrow(after_zip)
+
+# 6. Country
+after_country <- after_zip %>%
+  mutate(Country = str_squish(str_to_title(Country))) %>%
+  filter(!is.na(Country), Country != "")
+removed_by_column$Country <- nrow(after_zip) - nrow(after_country)
+
+# 7. Age
+after_age <- after_country %>%
+  mutate(Age = as.numeric(Age)) %>%
+  filter(!is.na(Age), Age > 0, Age <= 100, Age != "")
+removed_by_column$Age <- nrow(after_country) - nrow(after_age)
+
+# 8. Gender
+after_gender <- after_age %>%
+  filter(!is.na(Gender), Gender != "")
+removed_by_column$Gender <- nrow(after_age) - nrow(after_gender)
+
+# 9. Address
+after_address <- after_gender %>%
+  filter(!is.na(Address), Address != "")
+removed_by_column$Address <- nrow(after_gender) - nrow(after_address)
+
+# 10. Income
+after_income <- after_address %>%
+  filter(!is.na(Income), Income != "")
+removed_by_column$Income <- nrow(after_address) - nrow(after_income)
+
+# Show the final cleaned dataset
+cleaned_data_final <- after_income
+View(cleaned_data_final)
+
