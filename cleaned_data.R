@@ -76,17 +76,26 @@ data_clean <- data %>%
     Shipping_Method=as.factor(Shipping_Method),
     Payment_Method=as.factor(Payment_Method),
     Order_Status=as.factor(Order_Status),
-    Ratings=as.factor(Ratings)
+    Ratings=as.factor(Ratings),
+    City=as.factor(City),
+    State=as.factor(State),
+    Country=as.factor(Country),
+    Month=as.factor(Month),
+    
   ) %>%
   filter(
     !Transaction_ID %in% Transaction_ID[duplicated(Transaction_ID) | duplicated(Transaction_ID, fromLast = TRUE)],
     grepl("^[0-9]+$", Transaction_ID),
     
     # Age range validation
-    between(Age, 1, 100)
+    between(Age, 1, 100),
+    
+    !(is.na(Date)),
+    !(is.na(Time))
+
   ) %>%
   arrange(Transaction_ID)
-
+View(data_clean)
 # Check the structure and summary of your cleaned data
 str(data_clean)
 
@@ -115,3 +124,10 @@ complete_data <- complete(mice_data, 1)
 View(complete_data)
 
 saveRDS(complete_data, file="complete_dat.rds")
+
+str(complete_data)
+# Check for any constant columns (columns with no variation)
+summary(complete_data)
+
+# Check for the number of missing values in each column
+colSums(is.na(complete_data))
