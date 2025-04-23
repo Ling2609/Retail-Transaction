@@ -19,7 +19,6 @@ data_clean <- data %>%
     Country = str_squish(Country),# Remove extra spaces
     Country = str_to_title(Country), # Capitalize properly
     
-    
     # Convert Age to numeric (in case it's stored as character)
     Age = as.numeric(Age),
     
@@ -64,8 +63,20 @@ data_clean <- data %>%
       Amount * Total_Purchases
     ),
     Total_Amount = if_else(between(Total_Amount, 1, 1000000), 
-                           Total_Amount, NA_real_)
+                           Total_Amount, NA_real_),
     
+    #factorising here
+    Gender= as.factor(Gender),
+    Income= as.factor(Income),
+    Customer_Segment=as.factor(Customer_Segment),
+    Product_Category=as.factor(Product_Category),
+    Product_Brand=as.factor(Product_Brand),
+    Product_Type=as.factor(Product_Type),
+    Feedback=as.factor(Feedback),
+    Shipping_Method=as.factor(Shipping_Method),
+    Payment_Method=as.factor(Payment_Method),
+    Order_Status=as.factor(Order_Status),
+    Ratings=as.factor(Ratings)
   ) %>%
   filter(
     !Transaction_ID %in% Transaction_ID[duplicated(Transaction_ID) | duplicated(Transaction_ID, fromLast = TRUE)],
@@ -76,8 +87,31 @@ data_clean <- data %>%
   ) %>%
   arrange(Transaction_ID)
 
-data_clean <- na.omit(data_clean)
+# Check the structure and summary of your cleaned data
+str(data_clean)
 
-# View cleaned data 
-View(data_clean)
+# Check for any constant columns (columns with no variation)
+summary(data_clean)
 
+# Check for the number of missing values in each column
+colSums(is.na(data_clean))
+
+#install.packages("mice")
+library(mice)
+
+# Specify columns to impute
+columns_to_impute <- setdiff(names(data_clean), c("Transaction_ID", "Customer_ID"))
+
+# Perform imputation on the selected columns
+mice_data <- mice(data_clean[, columns_to_impute], m = 5, method = 'pmm', seed = 500)
+
+# Check the imputation results
+summary(mice_data)
+
+# Complete the imputed dataset (using the first imputed dataset)
+complete_data <- complete(mice_data, 1)
+
+# View the completed data
+View(complete_data)
+
+saveRDS(complete_data, file="complete_dat.rds")
