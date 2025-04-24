@@ -129,7 +129,7 @@ str(complete_data)
 # Check for any constant columns (columns with no variation)
 summary(complete_data)
 
-# Check for the number of missing values in each column
+# Check for the number of missing values in each columnn
 colSums(is.na(complete_data))
 
 complete_data <- readRDS("C:\\Users\\User\\Desktop\\Y2S1\\Programming for DA\\DA work\\complete_dat.rds")
