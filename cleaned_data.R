@@ -131,3 +131,5 @@ summary(complete_data)
 
 # Check for the number of missing values in each column
 colSums(is.na(complete_data))
+
+complete_data <- readRDS("C:\\Users\\User\\Desktop\\Y2S1\\Programming for DA\\DA work\\complete_dat.rds")
